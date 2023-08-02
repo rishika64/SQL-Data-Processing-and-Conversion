@@ -1,0 +1,39 @@
+Certainly! To achieve the functionality where the user uploads a .sql file and receives the converted file with both the converted code and the original comments, you can follow these steps as a beginner using Python and Flask:
+
+1. Set up a Flask web application:
+   - Install Flask using `pip install Flask`.
+   - Create a new Python file (e.g., `app.py`) and import Flask.
+
+2. Create an HTML form for file upload:
+   - Create a new folder named "templates" in the same directory as `app.py`.
+   - Inside the "templates" folder, create a new HTML file (e.g., `upload.html`) to display the file upload form.
+
+3. Define a route for file upload and processing:
+   - In `app.py`, define a route using the `@app.route()` decorator to handle both GET and POST requests for the upload form.
+   - For GET requests, render the `upload.html` template with the file upload form.
+   - For POST requests, handle the uploaded file, extract comments, perform the codebase conversion, and reattach the comments.
+
+4. Process the uploaded file:
+   - In the route for handling the POST request, access the uploaded file using `request.files['file']`.
+   - Check if the file has a valid .sql extension.
+   - Read the contents of the uploaded file using `.read()` and store it in a variable.
+
+5. Extract comments from the original code:
+   - Use Python's built-in `ast` module to parse the code and extract comments. Create a function to achieve this (e.g., `extract_comments`).
+
+6. Perform the codebase conversion:
+   - Implement your codebase conversion process, which could be specific to your use case.
+
+7. Reattach comments to the converted code:
+   - Create a function (e.g., `attach_comments`) to reattach the extracted comments to the converted code.
+
+8. Generate the converted .sql file:
+   - Combine the converted code and reattached comments to generate the final converted .sql file.
+   - Save the converted code to a new file (e.g., `converted_file.sql`) using Python's file handling.
+
+9. Provide the converted .sql file for download:
+   - Use Flask's `send_file()` function to provide the converted .sql file for download in the browser.
+
+10. Run the Flask app:
+    - At the end of `app.py`, add the `if __name__ == '__main__':` block and run the Flask app using `app.run(debug=True)`.
+
