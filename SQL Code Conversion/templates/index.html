@@ -1,4 +1,21 @@
-<!--upload.html-->
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Upload SQL File</h2>
+<form method="post" enctype="multipart/form-data">
+  <input type="file" name="file">
+  <input type="submit" value="Upload">
+</form>
+
+</body>
+</html>
+
+
+
+
+
+<!-- upload.html
 <!DOCTYPE html>
 <html>
 <head>
@@ -59,8 +76,8 @@
 <body>
   <div class="container">
     <h2>SQL Codebase Conversion</h2>
-    <form method="post" enctype="multipart/form-data">
-      <input type="file" name="file" id="fileInput" class="file-input" accept=".sql">
+    <form method="post" action="/process_sql" enctype="multipart/form-data">
+      <input type="file" name="sql_file" id="fileInput" class="file-input" accept=".sql">
       <label for="fileInput" class="file-label btn">Choose SQL File</label>
       <span class="file-name" id="fileName"></span>
       <br>
@@ -96,4 +113,4 @@
     });
   </script>
 </body>
-</html>
+</html> -->

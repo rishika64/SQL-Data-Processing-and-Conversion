@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Result</h2>
+
+{% if output_files %}
+  <h3>Known Batches:</h3>
+  <ul>
+    {% for file in output_files.known %}
+      <li><a href="/download/{{ file }}">{{ file }}</a></li>
+    {% endfor %}
+  </ul>
+
+  {% if output_files.comment %}
+    <h3>Comment Batches:</h3>
+    <ul>
+      {% for file in output_files.comment %}
+        <li><a href="/download/{{ file }}">{{ file }}</a></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if output_files.unknown %}
+    <h3>Unknown Batches:</h3>
+    <ul>
+      <li><a href="/download/unknown.sql">unknown.sql</a></li>
+    </ul>
+  {% endif %}
+
+{% else %}
+  <p>No batches found.</p>
+{% endif %}
+
+<a href="/">Upload Another File</a>
+
+</body>
+</html>

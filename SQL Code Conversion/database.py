@@ -4,7 +4,9 @@ import sqlite3
 
 # Function to initialize the database and create the table
 def initialize_database():
+    # Establishes a connection to the SQLite database
     conn = sqlite3.connect('app.db')
+    # Execute SQL commands
     cursor = conn.cursor()
 
     # Create the 'uploaded_files' table if it doesn't exist
@@ -17,7 +19,9 @@ def initialize_database():
         )
     ''')
 
+    # Changes are commited to database
     conn.commit()
+    # Connection is closed 
     conn.close()
 
 # Function to insert a new record into the database
