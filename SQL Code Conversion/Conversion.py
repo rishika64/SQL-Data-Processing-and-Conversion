@@ -1,46 +1,96 @@
 import os
+import json
 import re
 
-# Define the rules for known file conversion (find and replace)
-def convert_known_file(input_path, output_path):
-    # Read the content of the input file
-    with open(input_path, 'r') as input_file:
-        content = input_file.read()
+# Define the paths to the input files (output from Pre-Conversion.py) and the output file
+OUTPUT_FOLDER = 'output'
+CONVERSION_OUTPUT_FOLDER = 'conversion_output'
+METADATA_FILE = 'metadata.json'
+METADATA_PATH = os.path.join(OUTPUT_FOLDER, METADATA_FILE)
 
-    # Apply find and replace for standalone word
-    content = re.sub(r'\bAS\b', '::', content)
+# Create a directory for the conversion output if it doesn't exist
+os.makedirs(CONVERSION_OUTPUT_FOLDER, exist_ok=True)
 
-    # Write the modified content to the output file
-    with open(output_path, 'w') as output_file:
-        output_file.write(content)
+# Load the metadata
+with open(METADATA_PATH, 'r') as metadata_file:
+    metadata = json.load(metadata_file)
 
+# Define find and replace rules using regular expressions
+find_replace_rules = {
+    r'\bTINYINT\b': 'INT64',  
+    r'\bSMALLINT\b': 'INT64',
+    r'\bMEDIUMINT\b': 'INT64',
+    r'\bINT\b': 'INT64',
+    r'\bINTEGER\b': 'INT64',
+    r'\bBIGINT\b': 'INT64',
+    r'\bDECIMAL\b': 'NUMERIC',
+    r'\bNUMERIC(p,s)\b': 'NUMERIC',
+    r'\bREAL\b': 'FLOAT64',
+    r'\bDOUBLE PRECISION\b': 'FLOAT64',
+    r'\bBOOLEAN\b': 'BOOL',
+    r'\bCHAR(n)\b': 'STRING',
+    r'\bCHARACTER(n)\b': 'STRING',
+    r'\bVARCHAR(n)\b': 'STRING',
+    r'\bBYTEA\b': 'BYTES',
+    r'\bTINYTEXT\b': 'STRING',
+    r'\bTEXT\b': 'STRING',
+    r'\bMEDIUMTEXT\b': 'STRING',
+    r'\bLONGTEXT\b': 'STRING',
+    r'\bTIMESTAMP\b': 'DATETIME',
+    r'\bFUNCTION\b': 'PROCEDURE',
+    r'\bRETURNS int4\b': ' ',
+    r'\bLANGUAGE plpgsql\b': ' ',
+    r'\bVOLATILE\b': ' ',
+    r'\bAS $$\b': ' ',
+    r'\b$$\b': ' ',
+}
 
-# Define the rules for unknown file and comments conversion (pass through)
-def convert_unknown_file(input_path, output_path):
-    # Simply copy the content of the input file to the output file
-    with open(input_path, 'r') as input_file, open(output_path, 'w') as output_file:
-        output_file.write(input_file.read())
+# Function to apply find and replace using regular expressions
+def apply_find_replace_rules(content, rules):
+    for find, replace in rules.items():
+        content = re.sub(find, replace, content)
+    return content
 
-def main():
-    input_folder = 'output'  # Change to the path where Pre-Conversion.py saved the files
-    output_folder = 'converted_output'
+# Loop through the metadata to process batches in the specified order
+for batch_type, batch_count in metadata['order']:
+    if batch_type == 'known':
+        # Process known batches (perform find and replace)
+        # Load the known batch content
+        batch_filename = f"known_{batch_count}.sql"
+        with open(os.path.join(OUTPUT_FOLDER, batch_filename), 'r') as batch_file:
+            batch_content = batch_file.read()
 
-    # Create the output folder if it doesn't exist
-    os.makedirs(output_folder, exist_ok=True)
+        # Apply find and replace rules
+        converted_content = apply_find_replace_rules(batch_content, find_replace_rules)
 
-    for filename in os.listdir(input_folder):
-        input_path = os.path.join(input_folder, filename)
-        output_path = os.path.join(output_folder, filename)
+        # Save the converted batch
+        converted_batch_filename = f"known_{batch_count}.sql"
+        with open(os.path.join(CONVERSION_OUTPUT_FOLDER, converted_batch_filename), 'w') as converted_batch_file:
+            converted_batch_file.write(converted_content)
+    
+    elif batch_type == 'unknown':
+        # Process unknown batches (add a single-line comment)
+        # Load the unknown batch content
+        batch_filename = f"unknown_{batch_count}.sql"
+        with open(os.path.join(OUTPUT_FOLDER, batch_filename), 'r') as batch_file:
+            batch_content = batch_file.read()
 
-        if filename.startswith('known'):
-            # Apply rules for known files
-            convert_known_file(input_path, output_path)
-        elif filename.startswith('unknown') or filename.startswith('comments'):
-            # Apply rules for unknown files and comments
-            convert_unknown_file(input_path, output_path)
-        else:
-            # Handle any other files if needed
-            pass
+        # Add a comment line at the beginning of the batch
+        modified_content = f"-- MODIFICATION NEEDED\n{batch_content}"
 
-if __name__ == '__main__':
-    main()
+        # Save the converted batch
+        converted_batch_filename = f"unknown_{batch_count}.sql"
+        with open(os.path.join(CONVERSION_OUTPUT_FOLDER, converted_batch_filename), 'w') as converted_batch_file:
+            converted_batch_file.write(modified_content)
+
+# Copy comment batches as is
+for i in range(1, metadata['types']['comments'] + 1):
+    comment_filename = f"comments_{i}.sql"
+    with open(os.path.join(OUTPUT_FOLDER, comment_filename), 'r') as comment_file:
+        comment_content = comment_file.read()
+    
+    converted_comment_filename = f"comments_{i}.sql"
+    with open(os.path.join(CONVERSION_OUTPUT_FOLDER, converted_comment_filename), 'w') as converted_comment_file:
+        converted_comment_file.write(comment_content)
+
+print("Conversion completed. Converted files are saved in the 'conversion_output' folder.")
